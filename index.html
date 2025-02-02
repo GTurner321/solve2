@@ -1,3 +1,4 @@
+// this model is for testing 
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -82,7 +83,7 @@
   <div id="equation-container"></div>
   <div id="score-box">Score = 0</div>
   <script>
-    let a, b, c, d;
+    let a, b, c, d, e, f;
     let score = 0;
     let successCount = 0;
     let inputCount = 0; // Track number of user inputs
@@ -140,6 +141,12 @@ function updateScore(bonusPoints) {
       return `${left} = ${right}`;
     }
 
+    function formatInitialEquation(a, b, c, d, e, f) {
+      const left = `${formatNumber(e)}(${formatNumber(a)}x ${b >= 0 ? "+" : ""} ${formatNumber(b)})`;
+      const right = `${formatNumber(f)}(${formatNumber(c)}x ${d >= 0 ? "+" : ""} ${formatNumber(d)})`;
+      return `${left} = ${right}`;
+    }
+    
     function validateInput(input) {
       // Disallow invalid patterns like '/nx', '*nx', '/-nx', '*-nx'
       if (/^[\/\*][\-]?\d*x$/.test(input)) {
@@ -148,109 +155,101 @@ function updateScore(bonusPoints) {
       return /^[\+\-\*\/]x?$|^[\+\-\*\/](\d+(\.\d+)?|\-\d+(\.\d+)?)x?$/.test(input);
     }
 
- function generateEquation() {
+    function generateEquation() {
   // Reset inputCount when a new equation is generated
   inputCount = 0;
 
   const equationContainer = document.getElementById("equation-container");
   equationContainer.innerHTML = "";
 
-  const k = Math.floor(Math.random() * 2) + 1; // Random integer from 1 to 2
+  do {
+    a = Math.floor(Math.random() * 21) - 10;
+    c = Math.floor(Math.random() * 21) - 10;
+  } while (a === c || a === 0 || c === 0 || Math.abs(a - c) === 1); 
 
-  if (k === 1) {
-    do {
-      a = Math.floor(Math.random() * 21) - 10;
-    } while (a === 0 || a === 1);
-    
-    c = 0;
-    
-    do {
-      b = Math.floor(Math.random() * 21) - 10;
-    } while (b === 0);
-    
-    do {
-      d = Math.floor(Math.random() * 21) - 10;
-    } while (d === 0);
-  } else if (k === 2) {
-    a = 0;
-    
-    do {
-      c = Math.floor(Math.random() * 21) - 10;
-    } while (c === 0 || c === 1);
-    
-    do {
-      b = Math.floor(Math.random() * 21) - 10;
-    } while (b === 0);
-    
-    do {
-      d = Math.floor(Math.random() * 21) - 10;
-    } while (d === 0);
+  b = Math.floor(Math.random() * 21) - 10;
+  d = Math.floor(Math.random() * 21) - 10;
+
+  while (b === 0) {
+    b = Math.floor(Math.random() * 21) - 10;
+  }
+  while (d === 0) {
+    d = Math.floor(Math.random() * 21) - 10;
   }
 
-  renderEquation();
+  do {
+    e = Math.floor(Math.random() * 21) - 10;
+  } while (e === 0 || e === 1);
+
+  do {
+    f = Math.floor(Math.random() * 21) - 10;
+  } while (f === 0 || f === 1 || f === e); 
+
+  renderEquation(true); // Initial equation format
 }
 
-
-
-function renderEquation(command = null) {
+function renderEquation(isInitial = false) {
   const equationContainer = document.getElementById("equation-container");
+  equationContainer.innerHTML = ""; // Clear previous equation
 
   const equationDiv = document.createElement("div");
   equationDiv.className = "equation";
-  equationDiv.textContent = formatEquation(a, b, c, d);
-  equationContainer.appendChild(equationDiv);
 
-if (
-  (Math.abs(a - 1) < 0.000001 && Math.abs(b) < 0.000001 && Math.abs(c) < 0.000001) ||
-  (Math.abs(a) < 0.000001 && Math.abs(c - 1) < 0.000001 && Math.abs(d) < 0.000001)
-) {
-  const successMessage = document.createElement("div");
-  successMessage.className = "success-message";
-  const solution = Math.abs(a - 1) < 0.000001 ? formatNumber(d) : formatNumber(b);
-  successMessage.textContent = `Well done! You have solved the equation. x = ${solution}`;
-  equationContainer.appendChild(successMessage);
-
-  // Bonus points logic
-  let pointsMessage = "Points: 3";
-  let bonusPoints = 0;
-
-  if (inputCount <= 3) {
-    bonusPoints = 3;
-    pointsMessage += " +3 bonus";
-  } else if (inputCount === 4) {
-    bonusPoints = 2;
-    pointsMessage += " +2 bonus";
-  } else if (inputCount === 5) {
-    bonusPoints = 1;
-    pointsMessage += " +1 bonus";
+  if (isInitial) {
+    equationDiv.textContent = formatInitialEquation(a, b, c, d, e, f);
   } else {
-    bonusPoints = 0; // No bonus points for 6 or more inputs
+    equationDiv.textContent = formatEquation(a, b, c, d);
   }
 
-  // Update the score with base points and bonus points
-  updateScore(bonusPoints);
+  equationContainer.appendChild(equationDiv);
 
-  // Display the points message
-  const pointsDiv = document.createElement("div");
-  pointsDiv.className = "points-message";
-  pointsDiv.textContent = pointsMessage;
-  equationContainer.appendChild(pointsDiv);
+  // Success condition check
+  if (
+    (Math.abs(a - 1) < 0.000001 && Math.abs(b) < 0.000001 && Math.abs(c) < 0.000001) ||
+    (Math.abs(a) < 0.000001 && Math.abs(c - 1) < 0.000001 && Math.abs(d) < 0.000001)
+  ) {
+    const successMessage = document.createElement("div");
+    successMessage.className = "success-message";
+    const solution = Math.abs(a - 1) < 0.000001 ? formatNumber(d) : formatNumber(b);
+    successMessage.textContent = `Well done! You have solved the equation. x = ${solution}`;
+    equationContainer.appendChild(successMessage);
 
-  // New equation button
-  const newEquationButton = document.createElement("button");
-  newEquationButton.className = "new-equation-button";
-  newEquationButton.textContent = "NEW EQUATION";
-  newEquationButton.onclick = () => {
-    generateEquation();
-    window.scrollTo(0, 0); // Scroll back to the top for a new equation
-  };
-  equationContainer.appendChild(newEquationButton);
+    // Bonus points logic
+    let pointsMessage = "Points: 3";
+    let bonusPoints = 0;
 
-  successMessage.scrollIntoView({ behavior: "smooth", block: "center" });
-  return;
-}
+    if (inputCount <= 3) {
+      bonusPoints = 3;
+      pointsMessage += " +3 bonus";
+    } else if (inputCount === 4) {
+      bonusPoints = 2;
+      pointsMessage += " +2 bonus";
+    } else if (inputCount === 5) {
+      bonusPoints = 1;
+      pointsMessage += " +1 bonus";
+    }
 
+    updateScore(bonusPoints);
 
+    const pointsDiv = document.createElement("div");
+    pointsDiv.className = "points-message";
+    pointsDiv.textContent = pointsMessage;
+    equationContainer.appendChild(pointsDiv);
+
+    const newEquationButton = document.createElement("button");
+    newEquationButton.className = "new-equation-button";
+    newEquationButton.textContent = "NEW EQUATION";
+    newEquationButton.onclick = () => {
+      generateEquation();
+      window.scrollTo(0, 0);
+    };
+    equationContainer.appendChild(newEquationButton);
+
+    successMessage.scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+
+  // Input handling
   const inputContainer = document.createElement("div");
   inputContainer.className = "input-container";
 
@@ -264,29 +263,26 @@ if (
   inputContainer.appendChild(errorMessage);
 
   equationContainer.appendChild(inputContainer);
-
   inputBox.focus();
 
   inputBox.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    const input = inputBox.value.trim();
+    if (e.key === "Enter") {
+      const input = inputBox.value.trim();
+      if (!validateInput(input)) {
+        errorMessage.textContent = "Invalid command. Try again.";
+        return;
+      }
 
-    if (!validateInput(input)) {
-      errorMessage.textContent = "Invalid command. Try again.";
-      return;
+      inputCount += 1;
+      errorMessage.textContent = "";
+      inputBox.disabled = true;
+      processCommand(input);
+      renderEquation(false); // Re-render equation in simplified form
     }
-
-    // Increment inputCount for each valid input
-    inputCount += 1;
-
-    errorMessage.textContent = "";
-    inputBox.disabled = true;
-    processCommand(input);
-    renderEquation(input);
-  }
-});
+  });
 }
 
+    
     
     function processCommand(command) {
       const value = parseFloat(command.slice(1).replace("x", "")) || 1;
