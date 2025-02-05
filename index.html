@@ -1,5 +1,3 @@
-// this model is for testing brackets
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,325 +7,175 @@
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      padding: 20px;
+      font-family: Verdana, sans-serif;
       background-color: lightblue;
-    }
-     .equation {
-      font-family: "Pacifico", cursive;
-      font-size: 28px;
       text-align: center;
-      background-color: lightblue;
-      padding: 5px;
-      margin-bottom: 5px;
-    }    
-    .input-container {
+    }
+    .equation {
       display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 28px;
+      margin: 20px;
+    }
+    .fraction {
+      display: inline-flex;
       flex-direction: column;
       align-items: center;
-      margin-bottom: 10px;
+      line-height: 1;
+      margin: 0 5px;
+    }
+    .fraction .numerator {
+      border-bottom: 2px solid black;
+      padding: 2px 4px;
+    }
+    .fraction .denominator {
+      padding: 2px 4px;
+    }
+    .inline {
+      display: inline-flex;
+      align-items: center;
+      margin: 0 5px;
     }
     .input-box {
-      margin-top: 5px;
+      margin-top: 10px;
       padding: 5px;
       font-size: 16px;
     }
-    .input-box:disabled {
-      background-color: #f0f0f0;
-    }
-    .error-message {
-      color: orange;
-      margin-top: 5px;
-    }
-    .success-message {
-      color: green;
-      font-size: 20px;
-      margin-top: 10px;
-      text-align: center;
-    }
-    .points-message {
-    color: green;
-    font-size: 20px;
-    text-align: center;
-    margin-top: 10px;
-    }
     .new-equation-button {
-      margin: 20px auto; /* Centered horizontally */
+      margin-top: 20px;
       padding: 10px 20px;
       font-size: 16px;
       background-color: green;
       color: white;
       border: none;
       cursor: pointer;
-      display: block; /* Makes the button a block element */
     }
-    .new-equation-button:hover {
-      background-color: darkgreen;
+    .small-op {
+      font-size: 18px; /* Smaller font size for operation symbols */
     }
-        #score-box {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      background-color: yellow;
-      padding: 10px;
-      font-size: 16px;
-      font-weight: bold;
-      border: 2px solid black;
-      z-index: 1000;
+    .large-op {
+      font-size: 32px; /* Larger font size for operation symbols */
     }
-    
+    .pacifico {
+      font-family: 'Pacifico', cursive;
+      vertical-align: middle; /* Adjust to match baseline alignment */
+      position: relative;
+      top: -3px; /* Raise the 'x' slightly (negative values go up) */
+      line-height: 1; /* Set a consistent height */
+    }
+    .bracket {
+      font-size: 40px; /* Keep the larger font size */
+      position: relative; /* Enable relative positioning */
+      top: -3px; /* Shift the brackets upward (adjust the value as needed) */
+      line-height: 1; /* Consistent height for alignment */
+    }
   </style>
 </head>
 <body>
-  <button id="new-equation-top" class="new-equation-button">NEW EQUATION</button>
+  <button id="new-equation" class="new-equation-button">NEW EQUATION</button>
   <div id="equation-container"></div>
-  <div id="score-box">Score = 0</div>
   <script>
-    let a, b, c, d, e, f;
-    let score = 0;
-    let successCount = 0;
-    let inputCount = 0; // Track number of user inputs
-
-function updateScore(bonusPoints) {
-  // Add base 3 points and bonus points to the score
-  const totalPoints = 3 + bonusPoints;
-  score += totalPoints;
-  document.getElementById("score-box").textContent = `Score = ${score}`;
-}
-
-    function formatNumber(num) {
-  // If the absolute value of the number is less than 0.0005, return '0' or '-0' depending on the sign
-  if (Math.abs(num) < 0.0005) {
-    return num < 0 ? "-0" : "0";
-  }
-  
-  // If the number is a multiple of 10 (like 200), keep the integer part intact
-  if (num % 10 === 0 && num % 1 === 0) {
-    return num.toString();
-  }
-  
-  // Otherwise, proceed with the existing logic for decimal values
-  const formatted = num.toFixed(8);
-  
-  // Check if there are non-zero digits beyond the 3rd decimal place
-  const beyondThirdDecimal = formatted.slice(5).split('').some((digit) => digit !== '0');
-  
-  // Trim to 3 decimal places
-  let trimmed = parseFloat(num.toFixed(3)).toString();
-  
-  // If there are significant digits beyond the 3rd decimal place, return the full 3-decimal version
-  if (beyondThirdDecimal) {
-    return trimmed;
-  }
-  
-  // Otherwise, strip trailing zeros and the decimal point if not needed
-  return trimmed.replace(/\.?0+$/, "");
-}
-
-    function formatEquation(a, b, c, d) {
-      const isEndConditionI = Math.abs(a - 1) < 0.000001 && Math.abs(b) < 0.000001 && Math.abs(c) < 0.000001;
-      const isEndConditionII = Math.abs(a) < 0.000001 && Math.abs(c - 1) < 0.000001 && Math.abs(d) < 0.000001;
-
-      const left = [
-        a !== 0 ? (a === 1 ? "x" : a === -1 ? "-x" : formatNumber(a) + "x") : "",
-        !isEndConditionI && b !== 0 ? `${b > 0 && a !== 0 ? "+" : ""}${formatNumber(b)}` : "",
-      ].join("").trim() || "0";
-
-      const right = [
-        c !== 0 ? (c === 1 ? "x" : c === -1 ? "-x" : formatNumber(c) + "x") : "",
-        !isEndConditionII && d !== 0 ? `${d > 0 && c !== 0 ? "+" : ""}${formatNumber(d)}` : "",
-      ].join("").trim() || "0";
-
-      return `${left} = ${right}`;
-    }
-
-    function formatInitialEquation(a, b, c, d, e, f) {
-      const left = `${formatNumber(e)}(${formatNumber(a)}x ${b >= 0 ? "+" : ""} ${formatNumber(b)})`;
-      const right = `${formatNumber(f)}(${formatNumber(c)}x ${d >= 0 ? "+" : ""} ${formatNumber(d)})`;
-      return `${left} = ${right}`;
+    function getRandomNonZeroInteger() {
+      let num;
+      do {
+        num = Math.floor(Math.random() * 21) - 10;
+      } while (num === 0);
+      return num;
     }
     
-    function validateInput(input) {
-      // Disallow invalid patterns like '/nx', '*nx', '/-nx', '*-nx'
-      if (/^[\/\*][\-]?\d*x$/.test(input)) {
-        return false;
-      }
-      return /^[\+\-\*\/]x?$|^[\+\-\*\/](\d+(\.\d+)?|\-\d+(\.\d+)?)x?$/.test(input);
+    function gcd(a, b) {
+      return b === 0 ? Math.abs(a) : gcd(b, a % b);
     }
-
+    
+    function getCoprimePair() {
+      let num, denom;
+      do {
+        num = getRandomNonZeroInteger();
+        denom = getRandomNonZeroInteger();
+      } while (gcd(num, denom) !== 1);
+      return [num, denom];
+    }
+    
     function generateEquation() {
-  // Reset inputCount when a new equation is generated
-  inputCount = 0;
-
-  const equationContainer = document.getElementById("equation-container");
-  equationContainer.innerHTML = "";
-
-  do {
-    a = Math.floor(Math.random() * 21) - 10;
-    c = Math.floor(Math.random() * 21) - 10;
-  } while (a === c || a === 0 || c === 0 || Math.abs(a - c) === 1); 
-
-  b = Math.floor(Math.random() * 21) - 10;
-  d = Math.floor(Math.random() * 21) - 10;
-
-  while (b === 0) {
-    b = Math.floor(Math.random() * 21) - 10;
-  }
-  while (d === 0) {
-    d = Math.floor(Math.random() * 21) - 10;
-  }
-
-  do {
-    e = Math.floor(Math.random() * 21) - 10;
-  } while (e === 0 || e === 1);
-
-  do {
-    f = Math.floor(Math.random() * 21) - 10;
-  } while (f === 0 || f === 1 || f === e); 
-
-  renderEquation(true); // Initial equation format
-}
-
-function renderEquation(isInitial = false) {
-  const equationContainer = document.getElementById("equation-container");
-  equationContainer.innerHTML = ""; // Clear previous equation
-
-  const equationDiv = document.createElement("div");
-  equationDiv.className = "equation";
-
-  if (isInitial) {
-    equationDiv.textContent = formatInitialEquation(a, b, c, d, e, f);
-  } else {
-    equationDiv.textContent = formatEquation(a, b, c, d);
-  }
-
-  equationContainer.appendChild(equationDiv);
-
-  // Success condition check
-  if (
-    (Math.abs(a - 1) < 0.000001 && Math.abs(b) < 0.000001 && Math.abs(c) < 0.000001) ||
-    (Math.abs(a) < 0.000001 && Math.abs(c - 1) < 0.000001 && Math.abs(d) < 0.000001)
-  ) {
-    const successMessage = document.createElement("div");
-    successMessage.className = "success-message";
-    const solution = Math.abs(a - 1) < 0.000001 ? formatNumber(d) : formatNumber(b);
-    successMessage.textContent = `Well done! You have solved the equation. x = ${solution}`;
-    equationContainer.appendChild(successMessage);
-
-    // Bonus points logic
-    let pointsMessage = "Points: 3";
-    let bonusPoints = 0;
-
-    if (inputCount <= 3) {
-      bonusPoints = 3;
-      pointsMessage += " +3 bonus";
-    } else if (inputCount === 4) {
-      bonusPoints = 2;
-      pointsMessage += " +2 bonus";
-    } else if (inputCount === 5) {
-      bonusPoints = 1;
-      pointsMessage += " +1 bonus";
+      return {
+        a: getCoprimePair(),
+        b: getCoprimePair(),
+        c: getCoprimePair(),
+        d: getCoprimePair(),
+        e: getCoprimePair(),
+        f: getCoprimePair(),
+        g: getCoprimePair(),
+        h: getCoprimePair(),
+        i: getCoprimePair(),
+        j: getCoprimePair(),
+        k: getCoprimePair(),
+        l: getCoprimePair()
+      };
     }
 
-    updateScore(bonusPoints);
+    function formatFraction(n, d, skipOne = true, isAfterX = false) {
+      let sign = n * d < 0 ? "−" : ""; // Determine the sign
+      n = Math.abs(n);
+      d = Math.abs(d);
 
-    const pointsDiv = document.createElement("div");
-    pointsDiv.className = "points-message";
-    pointsDiv.textContent = pointsMessage;
-    equationContainer.appendChild(pointsDiv);
-
-    const newEquationButton = document.createElement("button");
-    newEquationButton.className = "new-equation-button";
-    newEquationButton.textContent = "NEW EQUATION";
-    newEquationButton.onclick = () => {
-      generateEquation();
-      window.scrollTo(0, 0);
-    };
-    equationContainer.appendChild(newEquationButton);
-
-    successMessage.scrollIntoView({ behavior: "smooth", block: "center" });
-    return;
-  }
-
-  // Input handling
-  const inputContainer = document.createElement("div");
-  inputContainer.className = "input-container";
-
-  const inputBox = document.createElement("input");
-  inputBox.className = "input-box";
-  inputBox.type = "text";
-  inputContainer.appendChild(inputBox);
-
-  const errorMessage = document.createElement("span");
-  errorMessage.className = "error-message";
-  inputContainer.appendChild(errorMessage);
-
-  equationContainer.appendChild(inputContainer);
-  inputBox.focus();
-
-  inputBox.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      const input = inputBox.value.trim();
-      if (!validateInput(input)) {
-        errorMessage.textContent = "Invalid command. Try again.";
-        return;
+      // Handle absolute value of 1
+      if (n === 1 && d === 1 && skipOne) {
+        return `
+          <span style="display: inline-block; vertical-align: middle; font-size: 18px;">
+            ${sign}
+          </span>`;
       }
 
-      inputCount += 1;
-      errorMessage.textContent = "";
-      inputBox.disabled = true;
-      processCommand(input);
-      renderEquation(false); // Re-render equation in simplified form
-    }
-  });
-}
-
-    
-    
-    function processCommand(command) {
-      const value = parseFloat(command.slice(1).replace("x", "")) || 1;
-      const operation = command[0];
-
-      if (command.includes("x")) {
-        if (operation === "+") {
-          a += value;
-          c += value;
-        } else if (operation === "-") {
-          a -= value;
-          c -= value;
-        }
-      } else {
-        if (operation === "+") {
-          b += value;
-          d += value;
-        } else if (operation === "-") {
-          b -= value;
-          d -= value;
-        } else if (operation === "*") {
-          a *= value;
-          b *= value;
-          c *= value;
-          d *= value;
-        } else if (operation === "/") {
-          a /= value;
-          b /= value;
-          c /= value;
-          d /= value;
-        }
+      // If denominator is 1, display only the numerator
+        if (d === 1) {
+        return `
+        <span style="display: inline-block; vertical-align: middle; font-size: 22px;">
+        ${sign}
+        </span>
+        <span style="display: inline-block; vertical-align: middle; font-size: 28px;">
+        ${n}
+        </span>`;
       }
+      
+      // Default fraction display
+      return `
+        <span style="display: inline-flex; align-items: center; vertical-align: middle;">
+          <span class="${isAfterX ? 'large-op' : 'small-op'}">${sign}</span>
+          <span style="display: inline-flex; flex-direction: column; align-items: center;">
+            <span style="font-size: 18px; line-height: 1;">${n}</span>
+            <span style="border-top: 1px solid black; font-size: 18px; line-height: 1;">${d}</span>
+          </span>
+        </span>
+      `;
     }
 
-    function handleNewEquation() {
-  generateEquation(); // Generates a new equation
-  window.scrollTo(0, 0); // Scroll to the top of the page
-}
+    function formatEquation(vars) {
+      const { a, b, c, d, e, f, g, h, i, j, k, l } = vars;
 
-// Add event listener to the top button for generating a new equation
-window.onload = () => {
-  document.getElementById("new-equation-top").addEventListener("click", handleNewEquation);
-};
+      // Format the equation
+      let equation = `
+        ${formatFraction(a[0], a[1])}
+        <span class="bracket">(</span>${formatFraction(c[0], c[1])}<span class="pacifico">x</span>&nbsp;${e[0] * e[1] < 0 ? "<span class='large-op'>−</span>&nbsp;" : "<span class='large-op'>+</span>&nbsp;"}${formatFraction(Math.abs(e[0]), Math.abs(e[1]), false, true)} <span class="bracket">)</span>&nbsp;=&nbsp;
+        ${formatFraction(g[0], g[1])}
+        <span class="bracket">(</span>${formatFraction(i[0], i[1])}<span class="pacifico">x</span>&nbsp;${k[0] * k[1] < 0 ? "<span class='large-op'>−</span>&nbsp;" : "<span class='large-op'>+</span>&nbsp;"}${formatFraction(Math.abs(k[0]), Math.abs(k[1]), false, true)} <span class="bracket">)</span>
+       `;
 
+      return equation;
+    }
+    
+    function renderEquation() {
+      const equationContainer = document.getElementById("equation-container");
+      equationContainer.innerHTML = "";
+      const equationDiv = document.createElement("div");
+      equationDiv.className = "equation";
+      const vars = generateEquation();
+      equationDiv.innerHTML = formatEquation(vars);
+      equationContainer.appendChild(equationDiv);
+    }
+
+    document.getElementById("new-equation").addEventListener("click", renderEquation);
+    window.onload = renderEquation;
   </script>
 </body>
 </html>
