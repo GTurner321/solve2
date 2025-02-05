@@ -118,41 +118,42 @@
       };
     }
 
-    function formatFraction(n, d, skipOne = true, isAfterX = false) {
-      let sign = n * d < 0 ? "−" : ""; // Determine the sign
-      n = Math.abs(n);
-      d = Math.abs(d);
+function formatFraction(n, d, skipOne = true, isAfterX = false) {
+  let sign = n * d < 0 ? "−" : ""; // Determine the sign
+  n = Math.abs(n);
+  d = Math.abs(d);
 
-      // Handle absolute value of 1
-      if (n === 1 && d === 1 && skipOne) {
-        return `
-          <span style="display: inline-block; vertical-align: middle; font-size: 18px;">
-            ${sign}
-          </span>`;
-      }
-
-      // If denominator is 1, display only the numerator
-        if (d === 1) {
-        return `
-        <span style="display: inline-block; vertical-align: middle; font-size: 18px;">
+  // Handle absolute value of 1
+  if (n === 1 && d === 1 && skipOne) {
+    return `
+      <span style="display: inline-block; vertical-align: middle; font-size: 18px;">
         ${sign}
-        </span>
-        <span style="display: inline-block; vertical-align: middle; font-size: 28px; position: relative; top: -1px;">
+      </span>`;
+  }
+
+  // If denominator is 1, display only the numerator
+  if (d === 1) {
+    return `
+      <span style="display: inline-block; vertical-align: middle; font-size: 18px;">
+        ${sign}
+      </span>
+      <span style="display: inline-block; vertical-align: middle; font-size: 28px; position: relative; top: -1px;">
         ${n}
-        </span> ;
-      }
-      
-      // Default fraction display
-      return `
-        <span style="display: inline-flex; align-items: center; vertical-align: middle;">
-          <span class="${isAfterX ? 'large-op' : 'small-op'}">${sign}</span>
-          <span style="display: inline-flex; flex-direction: column; align-items: center;">
-            <span style="font-size: 18px; line-height: 1;">${n}</span>
-            <span style="border-top: 1px solid black; font-size: 18px; line-height: 1;">${d}</span>
-          </span>
-        </span>
-      `;
-    }
+      </span>`;
+  }
+  
+  // Default fraction display
+  return `
+    <span style="display: inline-flex; align-items: center; vertical-align: middle;">
+      <span class="${isAfterX ? 'large-op' : 'small-op'}">${sign}</span>
+      <span style="display: inline-flex; flex-direction: column; align-items: center;">
+        <span style="font-size: 18px; line-height: 1;">${n}</span>
+        <span style="border-top: 1px solid black; font-size: 18px; line-height: 1;">${d}</span>
+      </span>
+    </span>
+  `;
+}
+
 
     function formatEquation(vars) {
       const { a, b, c, d, e, f, g, h, i, j, k, l } = vars;
