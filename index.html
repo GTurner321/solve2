@@ -150,61 +150,51 @@
         : `${formatFraction(outer1, outer2)}\\left(${cTerm} ${sign} ${fractionEF}\\right)`;
     }
 
-    function formatCombinedForm(outer1, outer2, c, e, commonDenom, simplify) {
-      if (c === 0 && e === 0) return "0";
-      
-      let numerator = c;
-      let constant = e;
-      let denominator = commonDenom;
-      let outerFraction = outer1 !== outer2;
-      
-      if (outerFraction) {
-        numerator *= outer1;
-        constant *= outer1;
-        denominator *= outer2;
-      }
+function formatCombinedForm(outer1, outer2, c, e, commonDenom, simplify) {
+    if (c === 0 && e === 0) return "0";
+    
+    let numerator = c;
+    let constant = e;
+    let denominator = commonDenom;
+    let outerFraction = outer1 !== outer2;
+    
+    // Only apply outer fraction multiplication if not combining terms
+    if (!outerFraction) {
+        if (simplify) {
+            const gcdAll = gcd(gcd(numerator, constant), denominator);
+            numerator = numerator / gcdAll;
+            constant = constant / gcdAll;
+            denominator = denominator / gcdAll;
+        }
 
-      if (simplify) {
-        const gcdAll = gcd(gcd(numerator, constant), denominator);
-        numerator = numerator / gcdAll;
-        constant = constant / gcdAll;
-        denominator = denominator / gcdAll;
-      }
+        let globalSign = "";
+        if (numerator < 0 && constant < 0) {
+            globalSign = "-";
+            numerator = Math.abs(numerator);
+            constant = Math.abs(constant);
+        } else if (numerator < 0) {
+            globalSign = "-";
+            numerator = Math.abs(numerator);
+        }
 
-      let globalSign = "";
-      if (numerator < 0 && constant < 0) {
-        globalSign = "-";
-        numerator = Math.abs(numerator);
-        constant = Math.abs(constant);
-      } else if (numerator < 0) {
-        globalSign = "-";
-        numerator = Math.abs(numerator);
-      }
-
-      let innerExpression = "";
-      if (denominator === 1) {
         let xTerm = Math.abs(numerator) === 1 ? "x" : `${Math.abs(numerator)}x`;
         let constantTerm = constant >= 0 ? `+${constant}` : `${constant}`;
-        innerExpression = `${xTerm}${constantTerm}`;
-      } else {
+        
+        if (denominator === 1) {
+            return `${globalSign}${xTerm}${constantTerm}`;
+        }
+        return `${globalSign}\\frac{${xTerm}${constantTerm}}{${denominator}}`;
+    } else {
         let xTerm = Math.abs(numerator) === 1 ? "x" : `${Math.abs(numerator)}x`;
         let constantTerm = constant >= 0 ? `+${constant}` : `${constant}`;
-        innerExpression = `\\frac{${xTerm}${constantTerm}}{${denominator}}`;
-      }
-
-      if (outerFraction) {
+        let innerExpression = `\\frac{${xTerm}${constantTerm}}{${denominator}}`;
+        
         let outerFrac = formatFraction(outer1, outer2);
-        if (outerFrac === "1") {
-          return `${globalSign}${innerExpression}`;
-        }
-        if (outerFrac === "-1") {
-          return `${globalSign === "-" ? "" : "-"}${innerExpression}`;
-        }
-        return `${globalSign}${outerFrac}\\left(${innerExpression}\\right)`;
-      }
-
-      return `${globalSign}${innerExpression}`;
+        if (outerFrac === "1") return innerExpression;
+        if (outerFrac === "-1") return `-${innerExpression}`;
+        return `${outerFrac}\\left(${innerExpression}\\right)`;
     }
+}
 
     function generateEquation(version) {
       let { a, b, c, d, e, f, g, h, i, j, k, l } = currentValues;
